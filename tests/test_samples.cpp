@@ -3,11 +3,12 @@
 #include "Debouncer.h"
 #include <atomic>
 #include <cstdlib>
-#define CHECK(condition) do { if (!(condition)) { std::cerr << "Check failed: " << #condition << " (line " << __LINE__ << ")\n"; return 1; } } while (false)
 #include <cmath>
 #include <cstdint>
 #include <iostream>
 #include <thread>
+
+#define CHECK(condition) do { if (!(condition)) { std::cerr << "Check failed: " << #condition << " (line " << __LINE__ << ")\n"; return 1; } } while (false)
 
 struct Message { std::uint32_t index; std::uint32_t check; };
 
@@ -29,7 +30,7 @@ int main() {
     {
         SpscQueue<Message, 64> queue;
         constexpr std::uint32_t count = 100000;
-        std::atomic<bool> good{true};
+        bool good = true;
         std::thread producer([&] {
             for (std::uint32_t i = 0; i < count; ++i) {
                 Message m{i, i ^ 0xA7B71C93U};
@@ -42,7 +43,7 @@ int main() {
             if (m.index != i || m.check != (i ^ 0xA7B71C93U)) good = false;
         }
         producer.join();
-        CHECK(good.load());
+        CHECK(good);
     }
     {
         SmoothedValue value;

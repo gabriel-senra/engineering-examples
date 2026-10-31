@@ -2,7 +2,8 @@
 #include <cstdint>
 
 // Call from one control task, with a monotonic uint32 millisecond clock.
-// Poll at intervals below 2^31 ms. No GPIO, synthesis, or product logic.
+// Keep intervalMs and gaps between polls below 2^31 ms.
+// The caller reads the physical pin and supplies its button state.
 class Debouncer {
 public:
     explicit Debouncer(std::uint32_t intervalMs) : interval_(intervalMs) {}

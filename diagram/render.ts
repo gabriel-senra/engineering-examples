@@ -1,5 +1,5 @@
-// Standalone portfolio example. Not an MCP server or product extraction.
-// Accept explicit MIDI pitches; never infer proprietary chord voicings.
+// Render explicit MIDI pitches. Chord naming and voicing selection belong
+// in a separate theory layer. Validate before generating any SVG.
 export function validate(input: unknown): {label: string; notes: number[]} {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('Expected object');
   if (Object.keys(input).some(k => !['label', 'notes'].includes(k))) throw new TypeError('Unknown field');
