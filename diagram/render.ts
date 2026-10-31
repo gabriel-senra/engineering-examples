@@ -16,5 +16,5 @@ export function render(input: unknown): string {
   const {label, notes} = validate(input);
   const whites = [60,62,64,65,67,69,71], blacks = [[61,25],[63,65],[66,145],[68,185],[70,225]];
   const key = (n: number,x: number,w: number,h: number) => `<rect x="${x}" y="45" width="${w}" height="${h}" fill="${notes.includes(n)?'#db5d42':h===100?'#202623':'#fff'}" stroke="#202623"/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(label)}" viewBox="0 0 280 220"><title>${escapeXml(label)}</title><text x="8" y="28" font-family="sans-serif">${escapeXml(label)}</text>${whites.map((n,i)=>key(n,i*40,40,160)).join('')}${blacks.map(([n,x])=>key(n,x,30,100)).join('')}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(label)}" width="420" height="330" viewBox="0 0 280 220"><title>${escapeXml(label)}</title><text x="8" y="28" font-family="sans-serif">${escapeXml(label)}</text>${whites.map((n,i)=>key(n,i*40,40,160)).join('')}${blacks.map(([n,x])=>key(n,x,30,100)).join('')}</svg>`;
 }
