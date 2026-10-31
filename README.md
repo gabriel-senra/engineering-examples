@@ -4,7 +4,7 @@ Small examples at the boundary between sound, input and software. Each has a nar
 
 **C++17 · TypeScript · Standard library · Node.js**
 
-These examples were prepared for this portfolio review. Queue and ramp examples were revised from the supplied portfolio starter; debounce and rendering examples were added in this execution. They are not historical product commits or extracted proprietary implementations. Gabriel should review and be able to explain each example before publishing it as selected work.
+These standalone educational examples were prepared for this portfolio with AI assistance. They are separate from the private product implementations and do not represent historical product commits.
 
 | Example | Contract | Checks |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-The direct compiler route was run here. CMake is supplied for portability but was unavailable in the review environment. The workflow is prepared; no hosted CI result is claimed.
+The direct compiler route passes locally. GitHub Actions also passes the CMake/CTest build, sanitizer checks and Node renderer tests.
 
 ## Run TypeScript checks
 
