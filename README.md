@@ -1,28 +1,29 @@
 # Engineering Examples
 
-Small examples at the boundary between sound, input and software. Each has a narrow contract, explicit failure behavior and tests that run without audio hardware or product source.
+This repository contains small, independently runnable C++ and TypeScript components related to audio control, physical input and music diagrams. They are educational implementations developed with AI assistance, separate from the private product source.
 
-**C++17 · TypeScript · Standard library · Node.js**
+**C++17 · TypeScript · Node.js**
 
-These standalone educational examples were prepared for this portfolio with AI assistance. They are separate from the private product implementations and do not represent historical product commits.
+## What each example demonstrates
 
-| Example | Contract | Checks |
+| Component | Problem it addresses | Implementation and checks |
 | --- | --- | --- |
-| [Bounded SPSC queue](include/SpscQueue.h) | Exactly one producer and one consumer; fixed power-of-two capacity; failed push changes nothing; failed pop preserves output | Empty/full, FIFO, slot reuse and 100,000 two-field messages across two threads |
-| [Parameter ramp](include/SmoothedValue.h) | Finite float targets; single-thread use; fixed sample count; exact final target | Endpoint, holding, mid-ramp retarget, repeated target and nonpositive length |
-| [Button debounce](include/Debouncer.h) | One control task; monotonic uint32 milliseconds; stable input for the chosen interval | Bounce, press/release, no repeated transition and clock rollover |
-| [Diagram renderer](diagram/render.ts) | 1–12 distinct explicit MIDI pitches, 60–71; text label at most 80 characters | Rejected inputs, escaped text, 12-key geometry, selected-note count and input isolation |
+| [SPSC queue](include/SpscQueue.h) | Passing messages between one producer and one consumer without growing a container | Fixed capacity, explicit full/empty results and release/acquire publication; tests check FIFO order, overflow and two-thread message integrity |
+| [Parameter ramp](include/SmoothedValue.h) | Moving a control value toward a target over a known number of samples | A sample-stepped linear ramp with an exact endpoint; tests cover retargeting, repeated targets and zero-length input |
+| [Button debounce](include/Debouncer.h) | Preventing short switch changes from becoming repeated button actions | Accepts a candidate state after a stable interval; tests cover bounce, release and clock rollover |
+| [SVG keyboard renderer](diagram/render.ts) | Producing a consistent diagram from explicit pitches | Validates input and escapes label text; tests check ranges, duplicates, text escaping and selected keys |
 
-Run both suites with `python3 check.py` (requires g++ and Node 24+).
+The components share a small scope and explicit contracts. They are not extra products or substitutes for the complete recorder, synthesizer or MCP server.
 
-## Run C++ checks
+## Run the tests
+
+With g++ and Node.js 24+ installed:
 
 ```sh
-g++ -std=c++17 -pthread -Wall -Wextra -Wpedantic -Werror -O2 -Iinclude tests/test_samples.cpp -o /tmp/engineering-tests
-/tmp/engineering-tests
+python3 check.py
 ```
 
-Or with CMake 3.16+:
+The C++ checks can also run through CMake 3.16+:
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -30,30 +31,22 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-The direct compiler route passes locally. GitHub Actions also passes the CMake/CTest build, sanitizer checks and Node renderer tests.
-
-## Run TypeScript checks
-
-Use Node.js 24+, whose native type stripping executes this erasable TypeScript without downloads:
+To run only the TypeScript renderer tests:
 
 ```sh
 node --test diagram/render.test.mjs
-node --input-type=module -e "import {render} from './diagram/render.ts'; console.log(render({label:'C major',notes:[60,64,67]}))" > /tmp/chord.svg
 ```
 
-Native execution checks runtime behavior; it is not a TypeScript compiler type check. The example does not implement MCP transport or PNG export.
+GitHub Actions runs the CMake/CTest build, sanitizer checks and renderer tests.
 
-## Why these choices matter
+## Contracts and limitations
 
-A queue publishes slot writes with release/acquire ordering; relaxed access is sufficient for an index owned by only one thread. The queue rejects overload instead of allocating. Lock-free atomics are required at compile time on the target. No guarantee of application-level deadline compliance follows from that alone.
+The queue requires exactly one producer and one consumer and a target with lock-free index atomics. A failed push must be handled by its caller; queue behavior alone does not guarantee an application's audio deadline.
 
-A ramp lands exactly on its target after the chosen number of samples, avoiding accumulated endpoint drift. A retarget starts from the current value. NaN/infinite targets are outside this small example's contract.
+The ramp is single-threaded and accepts finite values. A new target starts from the current value, while repeating the same target does not restart the ramp.
 
-The debouncer waits for a stable candidate instead of accepting the first change after a timeout. Unsigned subtraction tolerates one clock rollover within the documented polling contract. Raw encoder quadrature requires a separate decoder.
+The debouncer uses a monotonic unsigned millisecond clock and requires the documented polling interval. It handles switch states, not encoder quadrature.
 
-The renderer accepts notes rather than generating voicings, which keeps musical inference outside the inspectable sample. XML escaping applies to visible and accessible text. It intentionally draws one octave only.
+The renderer accepts explicit pitches within one octave. It does not resolve chords, choose voicings or implement MCP. Node's native TypeScript execution checks runtime behavior rather than compiler type checking.
 
-## Validation scope
-
-Local C++ checks and four Node tests pass. AddressSanitizer and UndefinedBehaviorSanitizer pass with leak detection disabled because LeakSanitizer cannot inspect processes in this environment. No ThreadSanitizer, real-time deadline, device or full-product test result is asserted.
-
+Local sanitizer checks passed with leak detection disabled because LeakSanitizer could not inspect process state in that environment. Device behavior and full-product performance require their own tests.
