@@ -1,0 +1,23 @@
+name: Engineering examples
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  cpp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure
+      - run: g++ -std=c++17 -pthread -fsanitize=address,undefined -g -Iinclude tests/test_samples.cpp -o /tmp/sample-tests && /tmp/sample-tests
+  diagram:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test diagram/render.test.mjs
