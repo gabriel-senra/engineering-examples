@@ -1,10 +1,8 @@
-# Engineering Examples
+# Code examples
 
-These small C++ and TypeScript components make four ideas from audio software, physical controls and diagram rendering independently runnable. They are educational implementations developed with AI assistance, separate from the private product code.
+Four standalone components for audio software, physical controls and diagram rendering. They are educational implementations developed with AI assistance, separate from the private product code.
 
-## Start with a problem
-
-### Passing a control message between threads
+## SPSC queue
 
 A UI thread may need to tell an audio thread that a setting changed. A **single-producer, single-consumer (SPSC) queue** gives one thread responsibility for adding messages and another responsibility for removing them.
 
@@ -22,7 +20,7 @@ if (commands.pop(command)) { /* Apply the received command. */ }
 
 Tests check empty/full behavior, order, slot reuse and two-thread message integrity. The queue requires exactly one producer and one consumer; it is not a general-purpose queue for many writers.
 
-### Moving a level smoothly instead of changing it at once
+## Parameter smoothing
 
 An abrupt gain change can create an audible discontinuity. [The parameter ramp](include/SmoothedValue.h) moves a value toward a target over a chosen number of samples.
 
@@ -34,21 +32,21 @@ gain.setTarget(1.0f);       // next() returns 0.25, 0.5, 0.75, then exactly 1.0.
 
 A new target starts from the current value. Repeating the same target does not restart the ramp. This component is single-threaded and accepts finite numeric values; it does not provide the thread-to-thread messaging itself.
 
-### Turning a bouncing switch into one button action
+## Button debouncing
 
 A physical switch can briefly alternate between open and closed as it is pressed. Treating every change as an action can produce repeated triggers.
 
 [The debouncer](include/Debouncer.h) remembers a candidate state and accepts it only after it stays unchanged for a chosen interval. `update` returns `true` when the accepted state changes; `pressed` reads that accepted state. Tests cover bounce, release and the millisecond counter wrapping back to zero.
 
-It uses one control task and an unsigned millisecond clock. Both the debounce interval and gaps between polls must be less than half the clock range. Encoder direction decoding is a separate problem.
+It uses one control task and an unsigned millisecond clock. Both the debounce interval and gaps between polls must be less than half the clock range. Encoder direction decoding is outside this component.
 
-### Drawing a keyboard from explicit pitches
+## Keyboard renderer
 
 [The TypeScript renderer](diagram/render.ts) accepts a label and MIDI note numbers. In this example, 60 is middle C, 64 is E and 67 is G. It validates the list, highlights those keys and escapes label text before emitting SVG, a vector image format.
 
 ![C major keyboard example](diagram/example.svg)
 
-It deliberately accepts pitches rather than interpreting a chord name. That keeps validation and drawing small enough to inspect separately from a complete music-theory or MCP application.
+The renderer takes explicit pitches; chord-name interpretation belongs in a separate music-theory layer.
 
 ## Run the tests
 
@@ -74,4 +72,4 @@ node --test diagram/render.test.mjs
 
 GitHub Actions runs the CMake/CTest build, AddressSanitizer and UndefinedBehaviorSanitizer checks, and renderer tests. Sanitizers look for classes of memory and undefined-behavior errors; they do not establish real-time performance or prove the absence of races.
 
-The renderer tests execute TypeScript using Node's native type stripping, not a compiler type check. Local leak checking was unavailable in the development environment. These examples also do not replace device testing or full-product tests.
+The renderer tests execute TypeScript using Node's native type stripping, not a compiler type check. These examples also do not replace device testing or full-product tests.
