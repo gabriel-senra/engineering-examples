@@ -70,6 +70,6 @@ To run only the renderer tests:
 node --test diagram/render.test.mjs
 ```
 
-GitHub Actions runs the CMake/CTest build, AddressSanitizer and UndefinedBehaviorSanitizer checks, and renderer tests. Sanitizers look for classes of memory and undefined-behavior errors; they do not establish real-time performance or prove the absence of races.
+GitHub Actions runs the CMake/CTest build, AddressSanitizer and UndefinedBehaviorSanitizer checks, and renderer tests. The sanitizer checks cover classes of memory errors and undefined behavior.
 
-The renderer tests execute TypeScript using Node's native type stripping, not a compiler type check. These examples also do not replace device testing or full-product tests.
+The renderer tests execute TypeScript using Node’s native type stripping.
